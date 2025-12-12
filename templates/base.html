@@ -76,7 +76,7 @@
         <div class="container">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
                 <div>
-                    <p>&copy; 2024 {{ profile.name if profile else 'Your Name' }}. Built with FastAPI & HTMX.</p>
+                    <p>&copy; <span id="year"></span> {{ profile.name if profile else 'Your Name' }}. Built with FastAPI & HTMX.</p>
                 </div>
                 
                 <!-- Newsletter Signup -->
@@ -102,6 +102,8 @@
     
     <!-- Newsletter Form Script -->
     <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+
         document.getElementById('newsletter-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -157,6 +159,68 @@
             const menuToggle = document.querySelector('.menu-toggle');
             if (!navMenu.contains(e.target) && !menuToggle.contains(e.target)) {
                 navMenu.classList.remove('active');
+            }
+        });
+    </script>
+
+    <!-- Lazy Loading Images Script with Error Handling -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const lazyImages = document.querySelectorAll('img[data-src]');
+            
+            if ('IntersectionObserver' in window) {
+                const imageObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            const skeleton = img.previousElementSibling;
+                            
+                            // Add load event listener
+                            img.onload = function() {
+                                img.classList.add('loaded');
+                                // Hide skeleton on successful load
+                                if (skeleton && skeleton.classList.contains('skeleton')) {
+                                    skeleton.style.display = 'none';
+                                }
+                            };
+                            
+                            // Add error event listener
+                            img.onerror = function() {
+                                // Keep skeleton visible if image fails to load
+                                img.style.display = 'none';
+                                if (skeleton && skeleton.classList.contains('skeleton')) {
+                                    skeleton.style.display = 'block';
+                                }
+                            };
+                            
+                            img.src = img.dataset.src;
+                            img.removeAttribute('data-src');
+                            observer.unobserve(img);
+                        }
+                    });
+                }, {
+                    rootMargin: '50px' // Load images 50px before they enter viewport
+                });
+                
+                lazyImages.forEach(img => imageObserver.observe(img));
+            } else {
+                // Fallback for older browsers
+                lazyImages.forEach(img => {
+                    const skeleton = img.previousElementSibling;
+                    img.onload = function() {
+                        img.classList.add('loaded');
+                        if (skeleton && skeleton.classList.contains('skeleton')) {
+                            skeleton.style.display = 'none';
+                        }
+                    };
+                    img.onerror = function() {
+                        img.style.display = 'none';
+                        if (skeleton && skeleton.classList.contains('skeleton')) {
+                            skeleton.style.display = 'block';
+                        }
+                    };
+                    img.src = img.dataset.src;
+                });
             }
         });
     </script>
