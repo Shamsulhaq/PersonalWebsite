@@ -20,7 +20,13 @@
                 <div class="skill-item">
                     <div class="skill-header">
                         <span class="skill-name">{{ skill.name }}</span>
-                        <span class="skill-level">{{ skill.level }}%</span>
+                        <span class="skill-level">
+                            {% if skill.level >= 90 %}Expert
+                            {% elif skill.level >= 75 %}Advanced
+                            {% elif skill.level >= 50 %}Intermediate
+                            {% else %}Beginner
+                            {% endif %}
+                        </span>
                     </div>
                     <div class="skill-bar">
                         <div class="skill-bar-fill" style="width: {{ skill.level }}%"></div>
