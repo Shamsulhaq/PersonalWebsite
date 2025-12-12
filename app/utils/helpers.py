@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.models import SiteProfile, SiteTheme
 
 
-def save_upload_file(file: UploadFile, destination: str) -> str:
+async def save_upload_file(file: UploadFile, destination: str) -> str:
     """Save uploaded file and return the file path"""
     # Generate unique filename
     ext = file.filename.split('.')[-1] if '.' in file.filename else ''
@@ -21,8 +21,9 @@ def save_upload_file(file: UploadFile, destination: str) -> str:
     
     # Save file
     file_path = Path(destination) / unique_filename
+    content = await file.read()
     with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+        buffer.write(content)
     
     # Return path with leading slash for web serving
     return "/" + str(file_path).replace("\\", "/")

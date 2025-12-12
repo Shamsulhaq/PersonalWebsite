@@ -75,7 +75,7 @@ async def admin_blog_create(
     )
     
     if cover_image and cover_image.filename:
-        post.cover_image = save_upload_file(cover_image, "static/uploads/blog")
+        post.cover_image = await save_upload_file(cover_image, "static/uploads/blog")
     
     db.add(post)
     db.commit()
@@ -162,7 +162,7 @@ async def admin_blog_update(
     post.updated_at = datetime.utcnow()
     
     if cover_image and cover_image.filename:
-        post.cover_image = save_upload_file(cover_image, "static/uploads/blog")
+        post.cover_image = await save_upload_file(cover_image, "static/uploads/blog")
     
     db.commit()
     

@@ -25,7 +25,7 @@
         <div class="form-group">
             <label for="description">Detailed Description *</label>
             <div id="editor" style="min-height: 300px; background: white;">{{ project.description|safe if project else '' }}</div>
-            <textarea id="description" name="description" style="display:none;" required></textarea>
+            <textarea id="description" name="description" style="display:none;"></textarea>
             <small>Rich text description with formatting, images, links, etc.</small>
         </div>
         
@@ -115,9 +115,18 @@
     
     // Sync Quill content to hidden textarea on form submit
     var form = document.querySelector('form');
-    form.onsubmit = function() {
+    form.onsubmit = function(e) {
         var description = document.querySelector('textarea[name=description]');
         description.value = quill.root.innerHTML;
+        
+        // Validate that description is not empty
+        var text = quill.getText().trim();
+        if (text.length === 0) {
+            e.preventDefault();
+            alert('Please enter a project description');
+            return false;
+        }
+        return true;
     };
 </script>
 {% endblock %}

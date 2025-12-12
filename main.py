@@ -18,6 +18,11 @@ from datetime import datetime, timedelta
 from urllib.parse import quote
 import os
 
+# Configure multipart limits BEFORE creating FastAPI app
+# This allows large blog posts with rich text content (default is 1MB)
+import multipart
+multipart.MultipartParser.max_field_size = 10 * 1024 * 1024  # 10MB per field
+
 app = FastAPI(title="Personal Website")
 
 # Rate limiting - simple in-memory store

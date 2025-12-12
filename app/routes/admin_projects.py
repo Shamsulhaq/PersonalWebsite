@@ -69,7 +69,7 @@ async def admin_project_create(
     )
     
     if cover_image and cover_image.filename:
-        project.cover_image = save_upload_file(cover_image, "static/uploads/projects")
+        project.cover_image = await save_upload_file(cover_image, "static/uploads/projects")
     
     db.add(project)
     db.commit()
@@ -79,7 +79,7 @@ async def admin_project_create(
     if gallery_images:
         for idx, img_file in enumerate(gallery_images):
             if img_file and img_file.filename:
-                img_path = save_upload_file(img_file, "static/uploads/projects")
+                img_path = await save_upload_file(img_file, "static/uploads/projects")
                 project_image = ProjectImage(
                     project_id=project.id,
                     image_path=img_path,
@@ -139,14 +139,14 @@ async def admin_project_update(
     project.order = order
     
     if cover_image and cover_image.filename:
-        project.cover_image = save_upload_file(cover_image, "static/uploads/projects")
+        project.cover_image = await save_upload_file(cover_image, "static/uploads/projects")
     
     # Handle new gallery images
     if gallery_images:
         max_order = db.query(ProjectImage).filter(ProjectImage.project_id == project_id).count()
         for idx, img_file in enumerate(gallery_images):
             if img_file and img_file.filename:
-                img_path = save_upload_file(img_file, "static/uploads/projects")
+                img_path = await save_upload_file(img_file, "static/uploads/projects")
                 project_image = ProjectImage(
                     project_id=project.id,
                     image_path=img_path,

@@ -47,7 +47,7 @@
         <div class="form-group">
             <label for="content">Content *</label>
             <div id="editor-container" style="background: white;"></div>
-            <textarea id="content" name="content" style="display:none;" required>{{ post.content if post else '' }}</textarea>
+            <textarea id="content" name="content" style="display:none;">{{ post.content if post else '' }}</textarea>
             <small>Rich text editor with formatting options</small>
         </div>
         
@@ -128,6 +128,15 @@ document.getElementById('title').addEventListener('input', function(e) {
 // Sync Quill content to hidden textarea before form submission
 document.querySelector('form').addEventListener('submit', function(e) {
     contentTextarea.value = quill.root.innerHTML;
+    
+    // Validate that content is not empty
+    var text = quill.getText().trim();
+    if (text.length === 0) {
+        e.preventDefault();
+        alert('Please enter blog post content');
+        return false;
+    }
+    return true;
 });
 </script>
 {% endblock %}
