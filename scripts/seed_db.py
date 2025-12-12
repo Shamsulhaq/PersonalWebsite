@@ -1,4 +1,12 @@
-from database import SessionLocal, Project, BlogPost, Skill, ProjectImage, BlogImage, AdminUser, SiteProfile, SiteTheme, init_db
+import sys
+from pathlib import Path
+
+# Add parent directory to path to import app modules
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from app.database import SessionLocal
+from app.models import Project, BlogPost, Skill, ProjectImage, BlogImage, AdminUser, SiteProfile, SiteTheme
+from app.init_db import init_db
 from datetime import datetime
 
 def seed_database():

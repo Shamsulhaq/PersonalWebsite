@@ -4,8 +4,15 @@ Admin Setup Script
 Creates a new admin user for the personal website.
 """
 
-from database import SessionLocal, AdminUser, init_db
 import sys
+from pathlib import Path
+
+# Add parent directory to path to import app modules
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from app.database import SessionLocal
+from app.models import AdminUser
+from app.init_db import init_db
 
 def create_admin():
     # Initialize database
