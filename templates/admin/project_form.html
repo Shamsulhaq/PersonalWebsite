@@ -1,0 +1,123 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ 'Edit' if project else 'New' }} Project - Admin{% endblock %}
+{% block page_title %}🚀 {{ 'Edit' if project else 'New' }} Project{% endblock %}
+
+{% block content %}
+<!-- Quill Rich Text Editor -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
+<div class="admin-container">
+    <h1>{{ 'Edit' if project else 'New' }} Project</h1>
+    
+    <form method="post" action="{% if project %}/admin/projects/{{ project.id }}/edit{% else %}/admin/projects/new{% endif %}" enctype="multipart/form-data" class="admin-form">
+        <div class="form-group">
+            <label for="title">Title *</label>
+            <input type="text" id="title" name="title" value="{{ project.title if project else '' }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="short_description">Short Description</label>
+            <textarea id="short_description" name="short_description" rows="2" maxlength="250" placeholder="Brief summary shown on project cards (max 250 characters)">{{ project.short_description if project else '' }}</textarea>
+            <small>This appears on the projects listing page (max 250 characters)</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Detailed Description *</label>
+            <div id="editor" style="min-height: 300px; background: white;">{{ project.description|safe if project else '' }}</div>
+            <textarea id="description" name="description" style="display:none;" required></textarea>
+            <small>Rich text description with formatting, images, links, etc.</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="technologies">Technologies (comma-separated) *</label>
+            <input type="text" id="technologies" name="technologies" value="{{ project.technologies if project else '' }}" required>
+            <small>Example: Python,FastAPI,PostgreSQL</small>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="github_url">GitHub URL</label>
+                <input type="url" id="github_url" name="github_url" value="{{ project.github_url if project else '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="demo_url">Demo URL</label>
+                <input type="url" id="demo_url" name="demo_url" value="{{ project.demo_url if project else '' }}">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="order">Order</label>
+            <input type="number" id="order" name="order" value="{{ project.order if project else 0 }}">
+            <small>Lower numbers appear first</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="cover_image">Cover Image</label>
+            {% if project and project.cover_image %}
+            <div class="current-image">
+                <img src="{{ project.cover_image }}" alt="Current cover" style="max-width: 200px; margin-bottom: 10px;">
+                <p><small>Current cover image</small></p>
+            </div>
+            {% endif %}
+            <input type="file" id="cover_image" name="cover_image" accept="image/*">
+        </div>
+        
+        <div class="form-group">
+            <label for="gallery_images">Gallery Images (Multiple)</label>
+            {% if project and project.images %}
+            <div class="current-images">
+                {% for img in project.images %}
+                <div>
+                    <img src="{{ img.image_path }}" alt="Gallery image">
+                    <a href="/admin/projects/{{ project.id }}/images/{{ img.id }}/delete" 
+                       class="btn btn-danger" 
+                       onclick="return confirm('Delete this image?');">Delete</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <input type="file" id="gallery_images" name="gallery_images" accept="image/*" multiple>
+            <small>Select multiple images to add to project gallery</small>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{ 'Update' if project else 'Create' }} Project</button>
+            <a href="/admin/projects" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script>
+    // Initialize Quill editor
+    var quill = new Quill('#editor', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                [{ 'font': [] }],
+                [{ 'size': ['small', false, 'large', 'huge'] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'script': 'sub'}, { 'script': 'super' }],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],
+                [{ 'align': [] }],
+                ['blockquote', 'code-block'],
+                ['link', 'image', 'video'],
+                ['clean']
+            ]
+        },
+        placeholder: 'Write detailed project description with rich formatting...'
+    });
+    
+    // Sync Quill content to hidden textarea on form submit
+    var form = document.querySelector('form');
+    form.onsubmit = function() {
+        var description = document.querySelector('textarea[name=description]');
+        description.value = quill.root.innerHTML;
+    };
+</script>
+{% endblock %}

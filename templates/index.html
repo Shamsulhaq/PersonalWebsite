@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile.name }} - {{ profile.title }}{% endblock %}
+
+{% block content %}
+<section class="hero" {% if theme.hero_bg_type == 'image' and theme.hero_bg_image %}style="background: url('{{ theme.hero_bg_image }}') center/cover fixed, linear-gradient(135deg, var(--hero-gradient-start) 0%, var(--hero-gradient-end) 100%);"{% endif %}>
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">Hi, I'm {{ profile.name }}</h1>
+            <h2 class="hero-subtitle">{{ profile.title }}</h2>
+            <p class="hero-tagline">{{ profile.tagline }}</p>
+            <p class="hero-bio">{{ profile.bio }}</p>
+            
+            <div class="hero-links">
+                {% if profile.github %}
+                <a href="{{ profile.github }}" target="_blank" class="btn btn-primary">GitHub</a>
+                {% endif %}
+                {% if profile.linkedin %}
+                <a href="{{ profile.linkedin }}" target="_blank" class="btn btn-secondary">LinkedIn</a>
+                {% endif %}
+                <a href="/projects" class="btn btn-accent">View Projects</a>
+                {% if has_resume %}
+                <a href="/download/resume" class="btn btn-primary" style="background: var(--accent-color);">Download Resume</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">Latest Projects</h2>
+        <div 
+            hx-get="/api/projects" 
+            hx-trigger="load" 
+            hx-swap="innerHTML"
+            class="loading">
+            Loading projects...
+        </div>
+    </div>
+</section>
+
+<section class="section section-alt">
+    <div class="container">
+        <h2 class="section-title">Get In Touch</h2>
+        <p class="text-center">Interested in working together? Feel free to reach out!</p>
+        <div class="text-center" style="margin-top: 2rem;">
+            <a href="/contact" class="btn btn-primary">Contact Me</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

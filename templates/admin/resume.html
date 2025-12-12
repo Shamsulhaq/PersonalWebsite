@@ -1,0 +1,87 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Resume Management - Admin{% endblock %}
+{% block page_title %}📝 Resume{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1 style="margin: 0;">Resume Management</h1>
+</div>
+
+<!-- Upload Form -->
+<div class="card" style="padding: 2rem; margin-bottom: 2rem;">
+    <h2 style="margin-bottom: 1rem;">Upload New Resume</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Upload a PDF file. The most recent upload will be set as active automatically.</p>
+    
+    <form method="POST" action="/admin/resume/upload" enctype="multipart/form-data">
+        <div style="display: flex; gap: 1rem; align-items: end;">
+            <div style="flex: 1;">
+                <label for="file" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Resume File (PDF only)</label>
+                <input type="file" 
+                       id="file" 
+                       name="file" 
+                       accept=".pdf" 
+                       required
+                       style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--border-radius);">
+            </div>
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </div>
+    </form>
+</div>
+
+<!-- Resume List -->
+<div class="card" style="padding: 0;">
+    {% if resumes %}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: var(--bg-secondary); border-bottom: 1px solid var(--border-color);">
+                <th style="padding: 1rem; text-align: left;">Filename</th>
+                <th style="padding: 1rem; text-align: left;">Size</th>
+                <th style="padding: 1rem; text-align: left;">Uploaded</th>
+                <th style="padding: 1rem; text-align: center;">Status</th>
+                <th style="padding: 1rem; text-align: right;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resume in resumes %}
+            <tr style="border-bottom: 1px solid var(--border-color); {% if resume.is_active %}background: #f0fdf4;{% endif %}">
+                <td style="padding: 1rem;">
+                    <strong>{{ resume.filename }}</strong>
+                    {% if resume.is_active %}
+                    <span style="margin-left: 0.5rem; padding: 0.25rem 0.5rem; background: #10b981; color: white; border-radius: 4px; font-size: 0.75rem;">ACTIVE</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 1rem;">{{ (resume.file_size / 1024)|round(2) }} KB</td>
+                <td style="padding: 1rem;">{{ resume.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td style="padding: 1rem; text-align: center;">
+                    {% if resume.is_active %}
+                    <span style="color: #10b981; font-weight: 600;">✓ Active</span>
+                    {% else %}
+                    <form method="POST" action="/admin/resume/{{ resume.id }}/activate" style="display: inline;">
+                        <button type="submit" class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Set Active</button>
+                    </form>
+                    {% endif %}
+                </td>
+                <td style="padding: 1rem; text-align: right;">
+                    <a href="{{ resume.filepath }}" target="_blank" class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.85rem; margin-right: 0.5rem;">Preview</a>
+                    <form method="POST" action="/admin/resume/{{ resume.id }}/delete" style="display: inline;" onsubmit="return confirm('Delete this resume?');">
+                        <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="padding: 3rem; text-align: center; color: var(--text-secondary);">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">📄</div>
+        <p>No resumes uploaded yet</p>
+        <p style="font-size: 0.9rem; margin-top: 0.5rem;">Upload your first resume using the form above</p>
+    </div>
+    {% endif %}
+</div>
+
+<div style="margin-top: 2rem; padding: 1rem; background: #fef3c7; border-radius: var(--border-radius); border-left: 4px solid #f59e0b;">
+    <strong>💡 Note:</strong> Only PDF files are supported. The active resume is available at <code>/download/resume</code>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Projects - Admin{% endblock %}
+{% block page_title %}🚀 Projects{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1>Projects</h1>
+        <a href="/admin/projects/new" class="btn btn-primary">+ New Project</a>
+    </div>
+    
+    <div class="admin-table-container">
+        <table id="projectsTable" class="admin-table display responsive nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Technologies</th>
+                    <th>Order</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                <tr>
+                    <td>
+                        <strong>{{ project.title }}</strong>
+                        {% if project.cover_image %}
+                        <br><small>✓ Cover image</small>
+                        {% endif %}
+                        {% if project.images %}
+                        <br><small>🖼️ {{ project.images|length }} gallery image(s)</small>
+                        {% endif %}
+                    </td>
+                    <td>{{ project.technologies }}</td>
+                    <td>{{ project.order }}</td>
+                    <td class="table-actions">
+                        <a href="/admin/projects/{{ project.id }}/edit" class="btn btn-sm btn-secondary">Edit</a>
+                        <form method="post" action="/admin/projects/{{ project.id }}/delete" style="display: inline;" onsubmit="return confirm('Are you sure?');">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    $(document).ready(function() {
+        $('#projectsTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+            order: [[2, 'asc']], // Sort by Order column
+            language: {
+                search: "Search projects:",
+                lengthMenu: "Show _MENU_ projects per page",
+                info: "Showing _START_ to _END_ of _TOTAL_ projects",
+                infoEmpty: "No projects available",
+                infoFiltered: "(filtered from _MAX_ total projects)"
+            }
+        });
+    });
+</script>
+{% endblock %}

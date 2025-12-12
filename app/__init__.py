@@ -1,0 +1,3 @@
+"""
+FastAPI Personal Website Application
+"""

@@ -1,0 +1,60 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Profile - Admin{% endblock %}
+{% block page_title %}👤 Profile{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <h1>Site Profile</h1>
+    
+    {% if request.query_params.get('success') %}
+    <div class="alert alert-success">Profile updated successfully!</div>
+    {% endif %}
+    
+    <form method="post" action="/admin/profile" class="admin-form">
+        <div class="form-group">
+            <label for="name">Name *</label>
+            <input type="text" id="name" name="name" value="{{ profile.name }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="title">Title *</label>
+            <input type="text" id="title" name="title" value="{{ profile.title }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="tagline">Tagline</label>
+            <input type="text" id="tagline" name="tagline" value="{{ profile.tagline or '' }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="bio">Bio</label>
+            <textarea id="bio" name="bio" rows="4">{{ profile.bio or '' }}</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" value="{{ profile.email or '' }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="github">GitHub URL</label>
+            <input type="url" id="github" name="github" value="{{ profile.github or '' }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="linkedin">LinkedIn URL</label>
+            <input type="url" id="linkedin" name="linkedin" value="{{ profile.linkedin or '' }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="twitter">Twitter URL</label>
+            <input type="url" id="twitter" name="twitter" value="{{ profile.twitter or '' }}">
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

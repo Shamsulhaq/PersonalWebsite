@@ -1,0 +1,105 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Newsletter Subscribers - Admin{% endblock %}
+{% block page_title %}📧 Newsletter{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1 style="margin: 0;">Newsletter Subscribers</h1>
+</div>
+
+<!-- Stats Cards -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+    <div class="card" style="padding: 1.5rem; text-align: center;">
+        <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">{{ counts.all }}</div>
+        <div style="color: var(--text-secondary); margin-top: 0.5rem;">Total</div>
+    </div>
+    <div class="card" style="padding: 1.5rem; text-align: center;">
+        <div style="font-size: 2rem; font-weight: bold; color: #10b981;">{{ counts.active }}</div>
+        <div style="color: var(--text-secondary); margin-top: 0.5rem;">Active</div>
+    </div>
+    <div class="card" style="padding: 1.5rem; text-align: center;">
+        <div style="font-size: 2rem; font-weight: bold; color: #6b7280;">{{ counts.unsubscribed }}</div>
+        <div style="color: var(--text-secondary); margin-top: 0.5rem;">Unsubscribed</div>
+    </div>
+</div>
+
+<!-- Filter Tabs -->
+<div style="margin-bottom: 2rem; display: flex; gap: 1rem; border-bottom: 2px solid var(--border-color);">
+    <a href="/admin/newsletter" 
+       class="{% if not current_status %}active{% endif %}"
+       style="padding: 0.75rem 1.5rem; text-decoration: none; color: var(--text-primary); border-bottom: 3px solid {% if not current_status %}var(--primary-color){% else %}transparent{% endif %};">
+        All ({{ counts.all }})
+    </a>
+    <a href="/admin/newsletter?status=active" 
+       class="{% if current_status == 'active' %}active{% endif %}"
+       style="padding: 0.75rem 1.5rem; text-decoration: none; color: var(--text-primary); border-bottom: 3px solid {% if current_status == 'active' %}var(--primary-color){% else %}transparent{% endif %};">
+        Active ({{ counts.active }})
+    </a>
+    <a href="/admin/newsletter?status=unsubscribed" 
+       class="{% if current_status == 'unsubscribed' %}active{% endif %}"
+       style="padding: 0.75rem 1.5rem; text-decoration: none; color: var(--text-primary); border-bottom: 3px solid {% if current_status == 'unsubscribed' %}var(--primary-color){% else %}transparent{% endif %};">
+        Unsubscribed ({{ counts.unsubscribed }})
+    </a>
+</div>
+
+<!-- Subscribers Table -->
+<div class="card" style="padding: 0; overflow-x: auto;">
+    {% if subscribers %}
+    <table id="newsletterTable" class="admin-table display responsive nowrap" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: var(--bg-secondary); border-bottom: 1px solid var(--border-color);">
+                <th style="padding: 1rem; text-align: left;">Email</th>
+                <th style="padding: 1rem; text-align: left;">Name</th>
+                <th style="padding: 1rem; text-align: left;">Status</th>
+                <th style="padding: 1rem; text-align: left;">Subscribed</th>
+                <th style="padding: 1rem; text-align: right;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subscriber in subscribers %}
+            <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 1rem;">{{ subscriber.email }}</td>
+                <td style="padding: 1rem;">{{ subscriber.name or '-' }}</td>
+                <td style="padding: 1rem;">
+                    <span style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.85rem; background: {% if subscriber.status == 'active' %}#10b981{% else %}#6b7280{% endif %}; color: white;">
+                        {{ subscriber.status|title }}
+                    </span>
+                </td>
+                <td style="padding: 1rem;">{{ subscriber.subscribed_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td style="padding: 1rem; text-align: right;">
+                    <form method="POST" action="/admin/newsletter/{{ subscriber.id }}/delete" style="display: inline;" onsubmit="return confirm('Delete this subscriber?');">
+                        <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="padding: 3rem; text-align: center; color: var(--text-secondary);">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">📧</div>
+        <p>No subscribers yet</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    $(document).ready(function() {
+        $('#newsletterTable').DataTable({
+            responsive: true,
+            pageLength: 25,
+            order: [[3, 'desc']], // Sort by Subscribed date descending
+            language: {
+                search: "Search subscribers:",
+                lengthMenu: "Show _MENU_ subscribers per page",
+                info: "Showing _START_ to _END_ of _TOTAL_ subscribers",
+                infoEmpty: "No subscribers available",
+                infoFiltered: "(filtered from _MAX_ total subscribers)"
+            }
+        });
+    });
+</script>
+{% endblock %}

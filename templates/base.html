@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ profile.name if profile else 'Personal Website' }}{% endblock %}</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="{% block meta_description %}{{ profile.tagline if profile else 'Personal portfolio and blog' }}{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}developer, portfolio, blog, {{ profile.name if profile }}{% endblock %}">
+    <meta name="author" content="{{ profile.name if profile else 'Personal Website' }}">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:title" content="{% block og_title %}{{ profile.name if profile else 'Personal Website' }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ profile.tagline if profile else 'Personal portfolio and blog' }}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ request.url.scheme }}://{{ request.url.netloc }}/static/og-image.jpg{% endblock %}">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ request.url }}">
+    <meta property="twitter:title" content="{% block twitter_title %}{{ profile.name if profile else 'Personal Website' }}{% endblock %}">
+    <meta property="twitter:description" content="{% block twitter_description %}{{ profile.tagline if profile else 'Personal portfolio and blog' }}{% endblock %}">
+    <meta property="twitter:image" content="{% block twitter_image %}{{ request.url.scheme }}://{{ request.url.netloc }}/static/og-image.jpg{% endblock %}">
+    
+    <!-- RSS Feed -->
+    <link rel="alternate" type="application/rss+xml" title="{{ profile.name if profile else 'Blog' }} RSS Feed" href="/rss.xml">
+    
+    <link rel="stylesheet" href="/static/css/style.css">
+    
+    <!-- Theme CSS Variables - Must come after main CSS to override defaults -->
+    {% if theme %}
+    <style>
+        :root {
+            --primary-color: {{ theme.primary_color }} !important;
+            --secondary-color: {{ theme.secondary_color }} !important;
+            --accent-color: {{ theme.accent_color }} !important;
+            --text-primary: {{ theme.text_primary }} !important;
+            --text-secondary: {{ theme.text_secondary }} !important;
+            --bg-primary: {{ theme.bg_primary }} !important;
+            --bg-secondary: {{ theme.bg_secondary }} !important;
+            --bg-alt: {{ theme.bg_alt }} !important;
+            --hero-gradient-start: {{ theme.hero_gradient_start }} !important;
+            --hero-gradient-end: {{ theme.hero_gradient_end }} !important;
+            --font-family: {{ theme.font_family }} !important;
+            --border-radius: {{ theme.border_radius }} !important;
+        }
+    </style>
+    {% endif %}
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="/">{{ profile.name if profile else 'YourName' }}</a>
+            </div>
+            <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+            <div class="nav-menu" id="navMenu">
+                <a href="/" class="{% if active_page == 'home' %}active{% endif %}">Home</a>
+                <a href="/projects" class="{% if active_page == 'projects' %}active{% endif %}">Projects</a>
+                <a href="/skills" class="{% if active_page == 'skills' %}active{% endif %}">Skills</a>
+                <a href="/blog" class="{% if active_page == 'blog' %}active{% endif %}">Blog</a>
+                <a href="/contact" class="{% if active_page == 'contact' %}active{% endif %}">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
+                <div>
+                    <p>&copy; 2024 {{ profile.name if profile else 'Your Name' }}. Built with FastAPI & HTMX.</p>
+                </div>
+                
+                <!-- Newsletter Signup -->
+                <div style="flex: 1; max-width: 400px;">
+                    <form id="newsletter-form" style="display: flex; gap: 0.5rem;">
+                        <input type="email" 
+                               id="newsletter-email" 
+                               name="email" 
+                               placeholder="Subscribe to newsletter" 
+                               required
+                               style="flex: 1; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--border-radius); font-size: 0.9rem;">
+                        <button type="submit" 
+                                class="btn btn-primary" 
+                                style="padding: 0.5rem 1rem; white-space: nowrap;">
+                            Subscribe
+                        </button>
+                    </form>
+                    <div id="newsletter-message" style="margin-top: 0.5rem; font-size: 0.85rem;"></div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Newsletter Form Script -->
+    <script>
+        document.getElementById('newsletter-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const form = e.target;
+            const email = form.email.value;
+            const messageDiv = document.getElementById('newsletter-message');
+            
+            try {
+                // Generate CSRF token
+                const csrfResponse = await fetch('/api/csrf-token');
+                const csrfData = await csrfResponse.json();
+                
+                const formData = new FormData();
+                formData.append('email', email);
+                formData.append('csrf_token', csrfData.token);
+                
+                const response = await fetch('/api/newsletter/subscribe', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    messageDiv.innerHTML = '<span style="color: #10b981;">✓ ' + data.message + '</span>';
+                    form.reset();
+                } else {
+                    messageDiv.innerHTML = '<span style="color: #ef4444;">✗ ' + data.message + '</span>';
+                }
+            } catch (error) {
+                messageDiv.innerHTML = '<span style="color: #ef4444;">✗ An error occurred</span>';
+            }
+        });
+    </script>
+
+    <script>
+        function toggleMenu() {
+            const navMenu = document.getElementById('navMenu');
+            navMenu.classList.toggle('active');
+        }
+        
+        // Close menu when clicking on a link
+        document.querySelectorAll('.nav-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                const navMenu = document.getElementById('navMenu');
+                navMenu.classList.remove('active');
+            });
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const navMenu = document.getElementById('navMenu');
+            const menuToggle = document.querySelector('.menu-toggle');
+            if (!navMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+                navMenu.classList.remove('active');
+            }
+        });
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

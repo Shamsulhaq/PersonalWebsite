@@ -1,0 +1,84 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Contact Messages - Admin{% endblock %}
+{% block page_title %}📨 Messages{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <h1>Contact Messages</h1>
+    
+    <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem;">
+        <a href="?status=all" class="btn {% if status == 'all' %}btn-primary{% else %}btn-secondary{% endif %}">All ({{ counts.all }})</a>
+        <a href="?status=unread" class="btn {% if status == 'unread' %}btn-primary{% else %}btn-secondary{% endif %}">Unread ({{ counts.unread }})</a>
+        <a href="?status=read" class="btn {% if status == 'read' %}btn-primary{% else %}btn-secondary{% endif %}">Read ({{ counts.read }})</a>
+        <a href="?status=archived" class="btn {% if status == 'archived' %}btn-primary{% else %}btn-secondary{% endif %}">Archived ({{ counts.archived }})</a>
+    </div>
+    
+    {% if messages %}
+    <div class="table-responsive">
+        <table id="messagesTable" class="admin-table display responsive nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Subject</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for msg in messages %}
+                <tr style="{% if msg.status == 'unread' %}background: #fef3c7;{% endif %}">
+                    <td>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ msg.name }}</td>
+                    <td><a href="mailto:{{ msg.email }}">{{ msg.email }}</a></td>
+                    <td>{{ msg.subject }}</td>
+                    <td>
+                        <span class="badge" style="padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.875rem; 
+                            {% if msg.status == 'unread' %}background: #fbbf24; color: #78350f;
+                            {% elif msg.status == 'read' %}background: #93c5fd; color: #1e3a8a;
+                            {% else %}background: #d1d5db; color: #374151;{% endif %}">
+                            {{ msg.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="/admin/contact/{{ msg.id }}" class="btn btn-sm btn-primary">View</a>
+                        {% if msg.status == 'unread' %}
+                        <form method="POST" action="/admin/contact/{{ msg.id }}/mark-read" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-secondary">Mark Read</button>
+                        </form>
+                        {% endif %}
+                        <form method="POST" action="/admin/contact/{{ msg.id }}/delete" style="display: inline;" onsubmit="return confirm('Delete this message?');">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="text-align: center; padding: 2rem; color: #6b7280;">No messages found.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    $(document).ready(function() {
+        $('#messagesTable').DataTable({
+            responsive: true,
+            pageLength: 25,
+            order: [[0, 'desc']], // Sort by Date descending
+            language: {
+                search: "Search messages:",
+                lengthMenu: "Show _MENU_ messages per page",
+                info: "Showing _START_ to _END_ of _TOTAL_ messages",
+                infoEmpty: "No messages available",
+                infoFiltered: "(filtered from _MAX_ total messages)"
+            }
+        });
+    });
+</script>
+{% endblock %}

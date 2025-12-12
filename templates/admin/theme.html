@@ -1,0 +1,376 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Theme Customization{% endblock %}
+{% block page_title %}🎨 Theme{% endblock %}
+
+{% block extra_head %}
+<style>
+.theme-preset-card {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 3px solid transparent;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.theme-preset-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    border-color: rgba(102, 126, 234, 0.5);
+}
+
+.preset-gradient {
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.preset-colors {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.75rem;
+    background: white;
+}
+
+.preset-color-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.color-picker-group {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    transition: all 0.2s;
+}
+
+.color-picker-group:hover {
+    border-color: #667eea;
+    background: #f1f5f9;
+}
+
+.color-input-wrapper {
+    display: flex;
+    align-items: stretch;
+    gap: 0.75rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+    transition: all 0.2s;
+}
+
+.color-input-wrapper:focus-within {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.color-input-wrapper input[type="color"] {
+    width: 60px;
+    height: 60px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.color-input-wrapper input[type="text"] {
+    flex: 1;
+    border: none;
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1e293b;
+    background: transparent;
+}
+
+.section-divider {
+    margin: 3rem 0;
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-header" style="margin-bottom: 3rem;">
+    <!-- <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎨 Theme Customization</h1> -->
+    <p style="font-size: 1.1rem; color: #64748b;">Transform your website's appearance with beautiful presets or create your own custom theme</p>
+</div>
+
+<!-- Preset Themes -->
+<div class="card" style="margin-bottom: 3rem; padding: 2.5rem;">
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+        <h2 style="margin: 0; font-size: 1.75rem;">🎭 Preset Themes</h2>
+        <span style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">QUICK START</span>
+    </div>
+    <p style="color: #64748b; margin-bottom: 2rem; font-size: 1rem;">Choose from professionally designed themes - click to apply instantly</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
+        {% for preset_key, preset in presets.items() %}
+        <form method="POST" action="/admin/theme/preset/{{ preset_key }}" style="margin: 0;">
+            <button type="submit" class="theme-preset-card">
+                <div class="preset-gradient" style="background: linear-gradient(135deg, {{ preset.hero_gradient_start }}, {{ preset.hero_gradient_end }});">
+                    {{ preset.name }}
+                </div>
+                <div class="preset-colors">
+                    <div class="preset-color-dot" style="background: {{ preset.primary_color }};"></div>
+                    <div class="preset-color-dot" style="background: {{ preset.secondary_color }};"></div>
+                    <div class="preset-color-dot" style="background: {{ preset.accent_color }};"></div>
+                </div>
+            </button>
+        </form>
+        {% endfor %}
+    </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- Custom Theme Form -->
+<div class="card" style="padding: 2.5rem;">
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+        <h2 style="margin: 0; font-size: 1.75rem;">🎨 Custom Theme Builder</h2>
+        <span style="background: #f59e0b; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">ADVANCED</span>
+    </div>
+    <p style="color: #64748b; margin-bottom: 2.5rem; font-size: 1rem;">Fine-tune every aspect of your theme to match your brand perfectly</p>
+    
+    <form method="POST" action="/admin/theme/update" enctype="multipart/form-data">
+        <!-- Theme Name -->
+        <div class="form-group" style="max-width: 400px; margin-bottom: 3rem;">
+            <label for="name" style="font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; display: block;">📝 Theme Name</label>
+            <input type="text" id="name" name="name" value="{{ theme.name }}" required style="width: 100%; padding: 0.75rem; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem;">
+        </div>
+
+        <!-- Primary Colors -->
+        <div style="margin-bottom: 3rem;">
+            <h3 style="font-size: 1.25rem; margin-bottom: 1.5rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
+                <span>🎨</span> Primary Colors
+            </h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                <div class="color-picker-group">
+                    <label for="primary_color" style="font-weight: 600; font-size: 0.95rem; margin-bottom: 0.75rem; display: block; color: #1e293b;">Primary Color</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="primary_color" name="primary_color" value="{{ theme.primary_color }}">
+                        <input type="text" value="{{ theme.primary_color }}" readonly>
+                    </div>
+                    <small style="color: #64748b; display: block; margin-top: 0.5rem;">Main brand color for buttons and links</small>
+                </div>
+
+                <div class="color-picker-group">
+                    <label for="secondary_color" style="font-weight: 600; font-size: 0.95rem; margin-bottom: 0.75rem; display: block; color: #1e293b;">Secondary Color</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="secondary_color" name="secondary_color" value="{{ theme.secondary_color }}">
+                        <input type="text" value="{{ theme.secondary_color }}" readonly>
+                    </div>
+                    <small style="color: #64748b; display: block; margin-top: 0.5rem;">Secondary elements and borders</small>
+                </div>
+
+                <div class="color-picker-group">
+                    <label for="accent_color" style="font-weight: 600; font-size: 0.95rem; margin-bottom: 0.75rem; display: block; color: #1e293b;">Accent Color</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="accent_color" name="accent_color" value="{{ theme.accent_color }}">
+                        <input type="text" value="{{ theme.accent_color }}" readonly>
+                    </div>
+                    <small style="color: #64748b; display: block; margin-top: 0.5rem;">Highlights and hover effects</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Text Colors -->
+        <div style="margin-top: 2rem;">
+            <h3 style="margin-bottom: 1rem; color: #333;">Text Colors</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div class="form-group">
+                    <label for="text_primary">Primary Text Color</label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="color" id="text_primary" name="text_primary" value="{{ theme.text_primary }}" style="height: 50px; width: 80px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                        <input type="text" value="{{ theme.text_primary }}" style="flex: 1;" readonly>
+                    </div>
+                    <small>Main text color</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="text_secondary">Secondary Text Color</label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="color" id="text_secondary" name="text_secondary" value="{{ theme.text_secondary }}" style="height: 50px; width: 80px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                        <input type="text" value="{{ theme.text_secondary }}" style="flex: 1;" readonly>
+                    </div>
+                    <small>Secondary text and descriptions</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Background Colors -->
+        <div style="margin-top: 2rem;">
+            <h3 style="margin-bottom: 1rem; color: #333;">Background Colors</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div class="form-group">
+                    <label for="bg_primary">Primary Background</label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="color" id="bg_primary" name="bg_primary" value="{{ theme.bg_primary }}" style="height: 50px; width: 80px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                        <input type="text" value="{{ theme.bg_primary }}" style="flex: 1;" readonly>
+                    </div>
+                    <small>Main page background</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="bg_secondary">Secondary Background</label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="color" id="bg_secondary" name="bg_secondary" value="{{ theme.bg_secondary }}" style="height: 50px; width: 80px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                        <input type="text" value="{{ theme.bg_secondary }}" style="flex: 1;" readonly>
+                    </div>
+                    <small>Cards and section backgrounds</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="bg_alt">Alternative Background</label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="color" id="bg_alt" name="bg_alt" value="{{ theme.bg_alt }}" style="height: 50px; width: 80px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                        <input type="text" value="{{ theme.bg_alt }}" style="flex: 1;" readonly>
+                    </div>
+                    <small>Alternate section backgrounds</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hero Background -->
+        <div style="margin-top: 2rem;">
+            <h3 style="margin-bottom: 1rem; color: #333;">Hero Background</h3>
+            
+            <div class="form-group">
+                <label for="hero_bg_type">Background Type</label>
+                <select id="hero_bg_type" name="hero_bg_type" onchange="toggleHeroBackgroundOptions(this.value)" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="gradient" {% if theme.hero_bg_type == 'gradient' %}selected{% endif %}>Gradient</option>
+                    <option value="image" {% if theme.hero_bg_type == 'image' %}selected{% endif %}>Image</option>
+                </select>
+                <small>Choose between gradient colors or background image</small>
+            </div>
+
+            <div id="gradient-options" style="display: {% if theme.hero_bg_type == 'gradient' %}block{% else %}none{% endif %};">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                    <div class="form-group">
+                        <label for="hero_gradient_start">Gradient Start</label>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="color" id="hero_gradient_start" name="hero_gradient_start" value="{{ theme.hero_gradient_start }}" style="height: 50px; width: 80px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                            <input type="text" value="{{ theme.hero_gradient_start }}" style="flex: 1;" readonly>
+                        </div>
+                        <small>Hero section gradient start color</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hero_gradient_end">Gradient End</label>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="color" id="hero_gradient_end" name="hero_gradient_end" value="{{ theme.hero_gradient_end }}" style="height: 50px; width: 80px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                            <input type="text" value="{{ theme.hero_gradient_end }}" style="flex: 1;" readonly>
+                        </div>
+                        <small>Hero section gradient end color</small>
+                    </div>
+                </div>
+
+                <!-- Gradient Preview -->
+                <div style="margin-top: 1rem; padding: 3rem; border-radius: 8px; background: linear-gradient(135deg, {{ theme.hero_gradient_start }}, {{ theme.hero_gradient_end }}); text-align: center; color: white; font-weight: 600;">
+                    Hero Gradient Preview
+                </div>
+            </div>
+
+            <div id="image-options" style="display: {% if theme.hero_bg_type == 'image' %}block{% else %}none{% endif %}; margin-top: 1rem;">
+                <div class="form-group">
+                    <label for="hero_bg_image">Hero Background Image</label>
+                    {% if theme.hero_bg_image %}
+                    <div style="margin-bottom: 10px;">
+                        <img src="{{ theme.hero_bg_image }}" alt="Current hero background" style="max-width: 300px; border-radius: 8px; border: 1px solid #ddd;">
+                        <p><small>Current background image</small></p>
+                    </div>
+                    {% endif %}
+                    <input type="file" id="hero_bg_image" name="hero_bg_image" accept="image/*">
+                    <small>Upload an image for the hero background (recommended: 1920x1080px)</small>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        function toggleHeroBackgroundOptions(type) {
+            const gradientOptions = document.getElementById('gradient-options');
+            const imageOptions = document.getElementById('image-options');
+            
+            if (type === 'gradient') {
+                gradientOptions.style.display = 'block';
+                imageOptions.style.display = 'none';
+            } else {
+                gradientOptions.style.display = 'none';
+                imageOptions.style.display = 'block';
+            }
+        }
+        </script>
+
+        <!-- Typography & Layout -->
+        <div style="margin-top: 2rem;">
+            <h3 style="margin-bottom: 1rem; color: #333;">Typography & Layout</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div class="form-group">
+                    <label for="font_family">Font Family</label>
+                    <input type="text" id="font_family" name="font_family" value="{{ theme.font_family }}">
+                    <small>CSS font family value</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="border_radius">Border Radius</label>
+                    <input type="text" id="border_radius" name="border_radius" value="{{ theme.border_radius }}">
+                    <small>Default border radius (e.g., 8px, 12px)</small>
+                </div>
+            </div>
+        </div>
+
+        <hr class="section-divider">
+        
+        <div style="display: flex; gap: 1rem; justify-content: flex-end; align-items: center;">
+            <a href="/admin/dashboard" style="padding: 0.75rem 1.5rem; color: #64748b; text-decoration: none; font-weight: 600; transition: color 0.2s;" onmouseover="this.style.color='#1e293b'" onmouseout="this.style.color='#64748b'">
+                Cancel
+            </a>
+            <button type="submit" style="
+                padding: 0.875rem 2rem;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                border-radius: 12px;
+                font-weight: 600;
+                font-size: 1rem;
+                cursor: pointer;
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+                transition: all 0.3s;
+            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(102, 126, 234, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.3)'">
+                💾 Save Custom Theme
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Sync color inputs with text inputs
+document.querySelectorAll('.color-input-wrapper input[type="color"]').forEach(colorInput => {
+    const textInput = colorInput.nextElementSibling;
+    
+    colorInput.addEventListener('input', function() {
+        textInput.value = this.value.toUpperCase();
+    });
+    
+    // Also sync when text changes (for direct editing)
+    textInput.addEventListener('change', function() {
+        if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+            colorInput.value = this.value;
+        }
+    });
+});
+</script>
+{% endblock %}

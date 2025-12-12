@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.title }} - Projects{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="project-detail">
+            <a href="/projects" class="back-link" hx-boost="true">← Back to Projects</a>
+            
+            <header class="project-header">
+                <h1>{{ project.title }}</h1>
+                
+                {% if project.cover_image %}
+                <div class="project-cover">
+                    <img src="{{ project.cover_image }}" alt="{{ project.title }}">
+                </div>
+                {% endif %}
+                
+                <div class="project-tech">
+                    {% for tech in project.technologies.split(',') %}
+                    <span class="tech-tag">{{ tech }}</span>
+                    {% endfor %}
+                </div>
+            </header>
+            
+            <div class="project-content">
+                <div class="project-description">{{ project.description|safe }}</div>
+                
+                {% if project.images %}
+                <div class="project-gallery">
+                    <h2>Gallery</h2>
+                    <div class="gallery-grid">
+                        {% for image in project.images %}
+                        <div class="gallery-item" onclick="openLightbox({{ loop.index0 }})">
+                            <img src="{{ image.image_path }}" alt="{{ image.caption or project.title }}">
+                            {% if image.caption %}
+                            <p class="gallery-caption">{{ image.caption }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Lightbox Modal -->
+                {% if project.images %}
+                <div id="lightbox" class="lightbox" onclick="closeLightbox(event)">
+                    <span class="lightbox-close" onclick="closeLightbox(event)">&times;</span>
+                    <button class="lightbox-prev" onclick="changeImage(-1, event)">&#10094;</button>
+                    <button class="lightbox-next" onclick="changeImage(1, event)">&#10095;</button>
+                    <div class="lightbox-content">
+                        <img id="lightbox-img" src="" alt="">
+                        <div id="lightbox-caption" class="lightbox-caption"></div>
+                    </div>
+                    <div class="lightbox-counter" id="lightbox-counter"></div>
+                </div>
+                
+                <script>
+                    const galleryImages = [
+                        {% for image in project.images %}
+                        {
+                            src: "{{ image.image_path }}",
+                            caption: "{{ image.caption or '' }}",
+                            alt: "{{ image.caption or project.title }}"
+                        }{% if not loop.last %},{% endif %}
+                        {% endfor %}
+                    ];
+                    
+                    let currentImageIndex = 0;
+                    
+                    function openLightbox(index) {
+                        currentImageIndex = index;
+                        const lightbox = document.getElementById('lightbox');
+                        lightbox.style.display = 'flex';
+                        document.body.style.overflow = 'hidden';
+                        showImage();
+                    }
+                    
+                    function closeLightbox(event) {
+                        if (event) event.stopPropagation();
+                        const lightbox = document.getElementById('lightbox');
+                        lightbox.style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                    }
+                    
+                    function changeImage(direction, event) {
+                        if (event) event.stopPropagation();
+                        currentImageIndex += direction;
+                        if (currentImageIndex < 0) currentImageIndex = galleryImages.length - 1;
+                        if (currentImageIndex >= galleryImages.length) currentImageIndex = 0;
+                        showImage();
+                    }
+                    
+                    function showImage() {
+                        const img = document.getElementById('lightbox-img');
+                        const caption = document.getElementById('lightbox-caption');
+                        const counter = document.getElementById('lightbox-counter');
+                        
+                        img.src = galleryImages[currentImageIndex].src;
+                        img.alt = galleryImages[currentImageIndex].alt;
+                        caption.textContent = galleryImages[currentImageIndex].caption;
+                        counter.textContent = `${currentImageIndex + 1} / ${galleryImages.length}`;
+                    }
+                    
+                    // Keyboard navigation
+                    document.addEventListener('keydown', function(e) {
+                        const lightbox = document.getElementById('lightbox');
+                        if (lightbox.style.display === 'flex') {
+                            if (e.key === 'Escape') closeLightbox();
+                            if (e.key === 'ArrowLeft') changeImage(-1);
+                            if (e.key === 'ArrowRight') changeImage(1);
+                        }
+                    });
+                </script>
+                {% endif %}
+                
+                <div class="project-links-section">
+                    {% if project.github_url %}
+                    <a href="{{ project.github_url }}" target="_blank" class="btn btn-primary">
+                        View on GitHub
+                    </a>
+                    {% endif %}
+                    {% if project.demo_url %}
+                    <a href="{{ project.demo_url }}" target="_blank" class="btn btn-accent">
+                        Live Demo
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
