@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Unsubscribe - Newsletter{% endblock %}
+
+{% block content %}
+<section style="min-height: 60vh; display: flex; align-items: center; justify-content: center; padding: 2rem 0;">
+    <div style="max-width: 600px; width: 100%; padding: 0 1rem;">
+        <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 3rem 2rem;">
+            
+            {% if request.query_params.get('success') %}
+            <!-- Success Message -->
+            <div style="text-align: center; color: #059669;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">✓</div>
+                <h1 style="font-size: 2rem; margin-bottom: 1rem; color: #059669;">Unsubscribed Successfully</h1>
+                <p style="color: #64748b; margin-bottom: 2rem;">
+                    You've been successfully removed from the newsletter list. We're sorry to see you go!
+                </p>
+                <a href="/" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem 2rem; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                    Back to Home
+                </a>
+            </div>
+            
+            {% elif request.query_params.get('already') %}
+            <!-- Already Unsubscribed -->
+            <div style="text-align: center;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">ℹ️</div>
+                <h1 style="font-size: 2rem; margin-bottom: 1rem; color: #64748b;">Already Unsubscribed</h1>
+                <p style="color: #64748b; margin-bottom: 2rem;">
+                    This email address is already unsubscribed from the newsletter.
+                </p>
+                <a href="/" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem 2rem; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                    Back to Home
+                </a>
+            </div>
+            
+            {% elif request.query_params.get('notfound') %}
+            <!-- Email Not Found -->
+            <div style="text-align: center;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">❓</div>
+                <h1 style="font-size: 2rem; margin-bottom: 1rem; color: #64748b;">Email Not Found</h1>
+                <p style="color: #64748b; margin-bottom: 2rem;">
+                    This email address is not in our newsletter list.
+                </p>
+                <a href="/" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem 2rem; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                    Back to Home
+                </a>
+            </div>
+            
+            {% elif request.query_params.get('error') %}
+            <!-- Error Message -->
+            <div style="text-align: center;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+                <h1 style="font-size: 2rem; margin-bottom: 1rem; color: #dc2626;">Error</h1>
+                <p style="color: #64748b; margin-bottom: 2rem;">
+                    {{ request.query_params.get('error') }}
+                </p>
+                <a href="/" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem 2rem; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                    Back to Home
+                </a>
+            </div>
+            
+            {% else %}
+            <!-- Unsubscribe Form -->
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">📧</div>
+                <h1 style="font-size: 2rem; margin-bottom: 1rem; color: #1e293b;">Unsubscribe from Newsletter</h1>
+                <p style="color: #64748b;">
+                    We're sorry to see you go. You can unsubscribe from our newsletter below.
+                </p>
+            </div>
+
+            {% if subscriber and subscriber.status == 'active' %}
+            <!-- Confirmation Form -->
+            <form method="POST" action="/newsletter/unsubscribe" style="margin-top: 2rem;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="email" value="{{ email }}">
+                
+                <div style="background: #f8fafc; padding: 1.5rem; border-radius: 6px; margin-bottom: 1.5rem; text-align: center;">
+                    <p style="margin: 0; color: #475569;">
+                        <strong>Email:</strong> {{ email }}
+                    </p>
+                </div>
+                
+                <p style="color: #64748b; text-align: center; margin-bottom: 1.5rem;">
+                    Are you sure you want to unsubscribe from the newsletter?
+                </p>
+                
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <button type="submit" style="background: #dc2626; color: white; border: none; padding: 0.75rem 2rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 1rem;">
+                        Yes, Unsubscribe
+                    </button>
+                    <a href="/" style="display: inline-block; background: #e2e8f0; color: #475569; padding: 0.75rem 2rem; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+            
+            {% elif subscriber and subscriber.status == 'unsubscribed' %}
+            <!-- Already Unsubscribed -->
+            <div style="text-align: center; padding: 2rem 0;">
+                <p style="color: #64748b; margin-bottom: 1.5rem;">
+                    This email is already unsubscribed from the newsletter.
+                </p>
+                <a href="/" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem 2rem; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                    Back to Home
+                </a>
+            </div>
+            
+            {% elif email %}
+            <!-- Email Not in List -->
+            <div style="text-align: center; padding: 2rem 0;">
+                <p style="color: #64748b; margin-bottom: 1.5rem;">
+                    This email address is not in our newsletter list.
+                </p>
+                <a href="/" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem 2rem; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                    Back to Home
+                </a>
+            </div>
+            
+            {% else %}
+            <!-- Enter Email Form -->
+            <form method="GET" action="/newsletter/unsubscribe" style="margin-top: 2rem;">
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="email" style="display: block; margin-bottom: 0.5rem; color: #475569; font-weight: 600;">
+                        Email Address
+                    </label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        required 
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem;"
+                        placeholder="your-email@example.com"
+                    >
+                </div>
+                
+                <button type="submit" style="width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 0.75rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 1rem;">
+                    Continue
+                </button>
+            </form>
+            {% endif %}
+            
+            {% endif %}
+            
+        </div>
+    </div>
+</section>
+{% endblock %}
