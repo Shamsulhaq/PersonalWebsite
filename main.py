@@ -128,7 +128,7 @@ app.include_router(admin_resume_router)
 async def get_projects_partial(request: Request, db: Session = Depends(get_db)):
     """Return projects partial for HTMX"""
     from sqlalchemy.orm import joinedload
-    projects = db.query(Project).options(joinedload(Project.images)).order_by(Project.order).limit(3).all()
+    projects = db.query(Project).options(joinedload(Project.images)).order_by(Project.order).limit(4).all()
     
     # Fix image paths if they don't start with /
     for project in projects:
