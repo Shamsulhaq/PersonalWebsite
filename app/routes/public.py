@@ -20,7 +20,7 @@ async def home(request: Request, db: Session = Depends(get_db)):
     profile = get_profile(db)
     theme = get_theme(db)
     # Get latest 3 projects
-    projects = db.query(Project).order_by(Project.order).limit(3).all()
+    projects = db.query(Project).order_by(Project.order).limit(4).all()
     # Check if resume exists
     has_resume = db.query(Resume).filter(Resume.is_active == True).first() is not None
     return templates.TemplateResponse(
