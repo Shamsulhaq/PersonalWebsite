@@ -19,7 +19,7 @@ async def home(request: Request, db: Session = Depends(get_db)):
     """Home page"""
     profile = get_profile(db)
     theme = get_theme(db)
-    # Get latest 3 projects
+    # Get latest 4 projects
     projects = db.query(Project).order_by(Project.order).limit(4).all()
     # Check if resume exists
     has_resume = db.query(Resume).filter(Resume.is_active == True).first() is not None

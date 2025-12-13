@@ -1,3 +1,7 @@
+# Load environment variables from .env file FIRST before any other imports
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI, Request, Depends, UploadFile, File, Form, HTTPException, Response
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
