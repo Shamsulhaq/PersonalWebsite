@@ -225,3 +225,61 @@ async def contact_submit(
         return RedirectResponse(url="/contact?success=1", status_code=303)
     except Exception as e:
         return RedirectResponse(url="/contact?error=Failed+to+send+message", status_code=303)
+
+
+@router.get("/newsletter/unsubscribe", response_class=HTMLResponse)
+async def newsletter_unsubscribe_page(request: Request, email: str = None, db: Session = Depends(get_db)):
+    """Newsletter unsubscribe page"""
+    from app.models import Newsletter
+    
+    profile = get_profile(db)
+    theme = get_theme(db)
+    
+    # Check if email is already unsubscribed or not found
+    subscriber = None
+    if email:
+        subscriber = db.query(Newsletter).filter(Newsletter.email == email).first()
+    
+    csrf_token = generate_csrf_token()
+    
+    return templates.TemplateResponse(
+        "newsletter_unsubscribe.html",
+        {
+            "request": request, 
+            "profile": profile, 
+            "theme": theme, 
+            "email": email,
+            "subscriber": subscriber,
+            "csrf_token": csrf_token
+        }
+    )
+
+
+@router.post("/newsletter/unsubscribe", response_class=HTMLResponse)
+async def newsletter_unsubscribe_submit(
+    request: Request,
+    email: str = Form(...),
+    csrf_token: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """Process newsletter unsubscription"""
+    from app.models import Newsletter
+    from datetime import datetime
+    
+    if not verify_csrf_token(csrf_token):
+        return RedirectResponse(url="/newsletter/unsubscribe?error=Invalid+security+token", status_code=303)
+    
+    try:
+        subscriber = db.query(Newsletter).filter(Newsletter.email == email).first()
+        if subscriber and subscriber.status == "active":
+            subscriber.status = "unsubscribed"
+            subscriber.unsubscribed_at = datetime.utcnow()
+            db.commit()
+            return RedirectResponse(url="/newsletter/unsubscribe?success=1", status_code=303)
+        elif subscriber and subscriber.status == "unsubscribed":
+            return RedirectResponse(url="/newsletter/unsubscribe?already=1", status_code=303)
+        else:
+            return RedirectResponse(url="/newsletter/unsubscribe?notfound=1", status_code=303)
+    except Exception as e:
+        db.rollback()
+        return RedirectResponse(url="/newsletter/unsubscribe?error=Failed+to+unsubscribe", status_code=303)
