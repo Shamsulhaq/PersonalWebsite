@@ -1,6 +1,7 @@
 """
 Admin routes for blog post management
 """
+import os
 from fastapi import APIRouter, Request, Depends, UploadFile, File, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -14,7 +15,7 @@ from app.utils.helpers import get_profile, save_upload_file
 
 router = APIRouter(prefix="/admin/blog")
 templates = Jinja2Templates(directory="templates")
-
+SITE_URL = os.getenv("SITE_URL", "https://shamsul.me")
 
 @router.get("", response_class=HTMLResponse)
 async def admin_blog_list(
@@ -88,7 +89,7 @@ async def admin_blog_create(
         subscribers = db.query(Newsletter).filter(Newsletter.status == "active").all()
         if subscribers:
             profile = get_profile(db)
-            site_url = str(request.base_url).rstrip('/')
+            site_url = SITE_URL
             sender_name = profile.name if profile else "Blog Admin"
             
             subscriber_list = [{'email': s.email, 'name': s.name or 'there'} for s in subscribers]
@@ -174,7 +175,7 @@ async def admin_blog_update(
         subscribers = db.query(Newsletter).filter(Newsletter.status == "active").all()
         if subscribers:
             profile = get_profile(db)
-            site_url = str(request.base_url).rstrip('/')
+            site_url = SITE_URL
             sender_name = profile.name if profile else "Blog Admin"
             
             subscriber_list = [{'email': s.email, 'name': s.name or 'there'} for s in subscribers]

@@ -1,6 +1,7 @@
 """
 Public-facing routes for the personal website
 """
+import os
 from fastapi import APIRouter, Request, Depends, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
